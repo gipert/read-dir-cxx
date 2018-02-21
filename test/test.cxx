@@ -31,7 +31,7 @@ int main( int argc, char** argv ) {
     ReadDir::SetVerbose(true);
 
     // get directory contents recursively
-    ReadDir::GetContent(initName, std::string(argv[2]));
+    ReadDir::GetContent_R(initName, std::string(argv[2]));
 
     // get results
     std::vector<std::string> vDir  (ReadDir::GetDirs());
