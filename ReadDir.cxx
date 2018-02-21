@@ -34,6 +34,7 @@ struct dirent {
 #include <iostream>
 #include <dirent.h>
 #include <memory>
+#include <algorithm>
 
 namespace ReadDir {
 
