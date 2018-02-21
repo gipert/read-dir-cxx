@@ -11,8 +11,8 @@
 #include <vector>
 #include <string>
 
-#ifndef _READ_DIR
-#define _READ_DIR
+#ifndef _READ_DIR_
+#define _READ_DIR_
 
 namespace ReadDir {
 
@@ -29,6 +29,7 @@ namespace ReadDir {
                                                                         // searching recursively and store them into
                                                                         // vDir and vFiles
 
+    inline void Clear() { detail::vDir.clear(); detail::vFiles.clear(); }
     inline std::vector<std::string>& GetDirs () { return detail::vDir; }
     inline std::vector<std::string>& GetFiles() { return detail::vFiles; }
     inline void SetVerbose(bool stat) { detail::verbose = stat; }

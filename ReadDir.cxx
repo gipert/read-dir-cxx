@@ -61,7 +61,7 @@ namespace ReadDir {
         auto p = std::unique_ptr<DIR,std::function<int(DIR*)>>{opendir(foldName.c_str()), &closedir};
         dirent entry;
         bool foundDir = false;
-        for (auto* r = &entry; readdir_r(p.get(), &entry, &r) == 0 && r; ) {
+        for (auto* r = &entry; readdir_r(p.get(), &entry, &r) == 0 && r;) {
             auto e = std::string(entry.d_name);
             if (e == "." or e == "..") continue;
             if (entry.d_type == 4) {
@@ -111,17 +111,17 @@ namespace ReadDir {
 
     void GetContent_R(std::string foldName, std::string regex) {
 
-        if ( !detail::firstInstance ) {
+        if (!detail::firstInstance and (!detail::vDir.empty() or !detail::vFiles.empty())) {
             std::cout << "Warning: you called ReadDir::GetContent more than "
-                      << "one time, you will have duplicate files..." << std::endl;
+                      << "once, you may will have duplicate files..." << std::endl;
         }
 
         // fill vector with first directory
         detail::vDir.push_back(foldName);
 
-        for ( int i = 0; i < detail::vDir.size(); i++ ) {
+        for (int i = 0; i < detail::vDir.size(); i++) {
             if (detail::verbose) std::cout << detail::vDir[i] << "/" << std::endl;
-            GetContent( detail::vDir[i], regex );
+            GetContent(detail::vDir[i], regex);
             if (detail::verbose) std::cout << std::endl;
         }
         detail::firstInstance = false;
