@@ -21,17 +21,21 @@ std::ostream& operator<<(std::ostream& os, std::vector<T> const& c) {
 
 int main( int argc, char** argv ) {
 
-    std::string const initName = argc > 1 ? argv[1] : ".";
+    if (argc < 3) {
+        std::cout << "USAGE: " << std::string(argv[0]) << " <dir> <regex>\n";
+        return 1;
+    }
+    std::string initName = argv[1];
 
     // set verbose
-    //ReadDir::SetVerbose(true);
+    ReadDir::SetVerbose(true);
 
     // get directory contents recursively
-    ReadDir::GetContent_R( initName );
+    ReadDir::GetContent(initName, std::string(argv[2]));
 
     // get results
-    std::vector<std::string> vDir  ( ReadDir::GetDirs()  );
-    std::vector<std::string> vFiles( ReadDir::GetFiles() );
+    std::vector<std::string> vDir  (ReadDir::GetDirs());
+    std::vector<std::string> vFiles(ReadDir::GetFiles());
 
     std::cout << "########## DIRECTORIES ##########" << std::endl
               << vDir << std::endl

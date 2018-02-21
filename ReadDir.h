@@ -23,15 +23,15 @@ namespace ReadDir {
         extern bool verbose;                                            // verbose level (default false)
     }
 
-    bool GetContent   ( std::string foldName );                         // get the contents of 'foldName' directory and
+    bool GetContent  (std::string foldName, std::string regex = "*");   // get the contents of 'foldName' directory and
                                                                         // store them into vDir and vFiles
-    void GetContent_R ( std::string foldName );                         // get the contents of 'foldName' directory
+    void GetContent_R(std::string foldName, std::string regex = "*");   // get the contents of 'foldName' directory
                                                                         // searching recursively and store them into
                                                                         // vDir and vFiles
 
     inline std::vector<std::string>& GetDirs () { return detail::vDir; }
     inline std::vector<std::string>& GetFiles() { return detail::vFiles; }
-    inline void SetVerbose( bool stat ) { detail::verbose = stat; }
+    inline void SetVerbose(bool stat) { detail::verbose = stat; }
 }
 
 #endif

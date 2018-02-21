@@ -42,27 +42,74 @@ namespace ReadDir {
     bool detail::firstInstance = true;
     bool detail::verbose = false;
 
-    bool GetContent( std::string foldName ) {
-
+    bool GetContent(std::string foldName, std::string regex) {
+        if (std::count(regex.begin(), regex.end(), '*') > 1) {
+            std::cout << "WARNING: regex with multiple '*' is unsupported! Setting regex = \"*\"\n";
+            regex = "*";
+        }
+        if (regex.empty()) {
+            std::cout << "WARNING: empty regex! Setting regex = \"*\"\n";
+            regex = "*";
+        }
+        if (detail::verbose) std::cout << "Regex: " << regex << std::endl;
+        auto starpos = regex.find('*');
+        std::string prefix, postfix;
+        if (starpos != std::string::npos) {
+            prefix  = regex.substr(0, starpos);
+            postfix = regex.substr(starpos+1, regex.size());
+        }
         auto p = std::unique_ptr<DIR,std::function<int(DIR*)>>{opendir(foldName.c_str()), &closedir};
         dirent entry;
         bool foundDir = false;
         for (auto* r = &entry; readdir_r(p.get(), &entry, &r) == 0 && r; ) {
-            if ( entry.d_type == 4 ) {
-                if ( std::string(entry.d_name) != "." and std::string(entry.d_name) != ".." ) {
-                    detail::vDir.push_back(foldName + "/" + std::string(entry.d_name));
-                    foundDir = true;
-                }
+            auto e = std::string(entry.d_name);
+            if (e == "." or e == "..") continue;
+            if (entry.d_type == 4) {
+                detail::vDir.push_back(foldName + "/" + e);
+                if (detail::verbose) std::cout << e << std::endl;
             }
-            if ( entry.d_type == 8 ) {
-                detail::vFiles.push_back(foldName + "/" + std::string(entry.d_name));
-                if (detail::verbose) std::cout << "  " << std::string(entry.d_name) << std::endl;
+            if (entry.d_type == 8) {
+                if (prefix.empty() and !postfix.empty()){
+                    if (!e.compare(e.size() - postfix.size(), postfix.size(), postfix)) {
+                        detail::vFiles.push_back(foldName + "/" + e);
+                        if (detail::verbose) std::cout << "  " << e << std::endl;
+                        foundDir = true;
+                    }
+                }
+                else if (!prefix.empty() and postfix.empty()){
+                    auto e = std::string(entry.d_name);
+                    if (!e.compare(0, prefix.size(), prefix)) {
+                        detail::vFiles.push_back(foldName + "/" + e);
+                        if (detail::verbose) std::cout << "  " << e << std::endl;
+                        foundDir = true;
+                    }
+                }
+                else if (!prefix.empty() and !postfix.empty()){
+                    auto e = std::string(entry.d_name);
+                    if (!e.compare(0, prefix.size(), prefix) and !e.compare(e.size() - postfix.size(), postfix.size(), postfix)) {
+                        detail::vFiles.push_back(foldName + "/" + e);
+                        if (detail::verbose) std::cout << "  " << e << std::endl;
+                        foundDir = true;
+                    }
+                }
+                else if (prefix.empty() and postfix.empty() and regex == "*"){
+                        detail::vFiles.push_back(foldName + "/" + e);
+                        if (detail::verbose) std::cout << "  " << e << std::endl;
+                        foundDir = true;
+                }
+                else {
+                    if (e == regex) {
+                        detail::vFiles.push_back(foldName + "/" + e);
+                        if (detail::verbose) std::cout << "  " << e << std::endl;
+                        foundDir = true;
+                    }
+                }
             }
         }
         return foundDir;
     }
 
-    void GetContent_R( std::string foldName ) {
+    void GetContent_R(std::string foldName, std::string regex) {
 
         if ( !detail::firstInstance ) {
             std::cout << "Warning: you called ReadDir::GetContent more than "
@@ -74,7 +121,7 @@ namespace ReadDir {
 
         for ( int i = 0; i < detail::vDir.size(); i++ ) {
             if (detail::verbose) std::cout << detail::vDir[i] << "/" << std::endl;
-            GetContent( detail::vDir[i] );
+            GetContent( detail::vDir[i], regex );
             if (detail::verbose) std::cout << std::endl;
         }
         detail::firstInstance = false;
