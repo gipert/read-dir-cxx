@@ -65,12 +65,17 @@ namespace ReadDir {
         for (auto* r = &entry; readdir_r(p.get(), &entry, &r) == 0 && r;) {
             auto e = std::string(entry.d_name);
             if (e == "." or e == "..") continue;
+
+            // if is a directory
             if (entry.d_type == 4) {
                 detail::vDir.push_back(foldName + "/" + e);
                 if (detail::verbose) std::cout << e << std::endl;
             }
+
+            // if is a regular file
             if (entry.d_type == 8) {
                 if (prefix.empty() and !postfix.empty()){
+                    if (e.size() < postfix.size()) continue;
                     if (!e.compare(e.size() - postfix.size(), postfix.size(), postfix)) {
                         detail::vFiles.push_back(foldName + "/" + e);
                         if (detail::verbose) std::cout << "  " << e << std::endl;
@@ -78,6 +83,7 @@ namespace ReadDir {
                     }
                 }
                 else if (!prefix.empty() and postfix.empty()){
+                    if (e.size() < prefix.size()) continue;
                     auto e = std::string(entry.d_name);
                     if (!e.compare(0, prefix.size(), prefix)) {
                         detail::vFiles.push_back(foldName + "/" + e);
@@ -87,6 +93,8 @@ namespace ReadDir {
                 }
                 else if (!prefix.empty() and !postfix.empty()){
                     auto e = std::string(entry.d_name);
+                    if (e.size() < postfix.size()) continue;
+                    if (e.size() < prefix.size())  continue;
                     if (!e.compare(0, prefix.size(), prefix) and !e.compare(e.size() - postfix.size(), postfix.size(), postfix)) {
                         detail::vFiles.push_back(foldName + "/" + e);
                         if (detail::verbose) std::cout << "  " << e << std::endl;
